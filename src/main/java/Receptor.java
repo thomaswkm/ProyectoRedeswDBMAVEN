@@ -3,22 +3,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Receptor {
     public static void main(String[] args) {
         int puerto = 5050;
-
+        Connection conexion = null;
+        Statement stmt = null;
         try {
             // Establecer conexión a la base de datos MySQL
-            Connection conexion = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/sistema",
+                    conexion = DriverManager.getConnection(
+                    "jdbc:mysql://172.17.0.2:3306/sistema",
                     "root", // Reemplaza con tu nombre de usuario de MySQL
-                    "" // Reemplaza con tu contraseña de MySQL
-            );
+                    "pw"); // Reemplaza con tu contraseña de MySQL
+
+            stmt = conexion.createStatement();
+            String sql;
+            sql = "SELECT * FROM patentes";
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                System.out.println(rs.getString("PATENTE"));
+            }
 
             // Crear el socket del servidor
             ServerSocket receptorSocket = new ServerSocket(puerto);
@@ -35,6 +40,7 @@ public class Receptor {
                         direccionCamara + ", puerto: " + puertoCamara);
 
                 // Manejar la conexión en un nuevo hilo
+                Connection finalConexion = conexion;
                 Thread camaraThread = new Thread(() -> {
                     try {
                         // Obtener el stream de entrada después de la conexión
@@ -47,7 +53,7 @@ public class Receptor {
                                     ", puerto " + puertoCamara + ": " + patenteRecibida);
 
                             // Guardar la patente en la base de datos
-                            guardarPatenteEnBaseDatos(conexion, patenteRecibida);
+                            guardarPatenteEnBaseDatos(finalConexion, patenteRecibida);
                         }
 
                         // Cerrar conexión

@@ -5,16 +5,19 @@ import java.util.Random;
 
 public class Camara {
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("Uso: java Camara <host> <puerto>");
+        // Obtener la dirección IP y puerto del receptor desde las variables de entorno
+        String receptorIp = System.getenv("RECEPTOR_IP");
+        String receptorPort = System.getenv("RECEPTOR_PORT");
+
+        if (receptorIp == null || receptorPort == null) {
+            System.out.println("Debes proporcionar RECEPTOR_IP y RECEPTOR_PORT como variables de entorno.");
             System.exit(1);
         }
 
-        String host = args[0];
-        int puertoCamara = Integer.parseInt(args[1]);
+        int puertoCamara = Integer.parseInt(receptorPort);
 
         try {
-            Socket clienteSocket = new Socket(host, puertoCamara);
+            Socket clienteSocket = new Socket(receptorIp, puertoCamara);
             OutputStream salida = clienteSocket.getOutputStream();
 
             while (true) {
@@ -50,4 +53,3 @@ public class Camara {
         return patente.toString();
     }
 }
-
