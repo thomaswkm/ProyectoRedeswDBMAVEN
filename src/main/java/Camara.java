@@ -1,6 +1,7 @@
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.Socket;
+import java.net.*;
 import java.util.Random;
 
 public class Camara {
@@ -14,11 +15,12 @@ public class Camara {
             System.exit(1);
         }
 
-        int puertoCamara = Integer.parseInt(receptorPort);
+        int puertoReceptor = Integer.parseInt(receptorPort);
 
         try {
-            Socket clienteSocket = new Socket(receptorIp, puertoCamara);
-            OutputStream salida = clienteSocket.getOutputStream();
+            Socket socketTCP = new Socket(receptorIp, puertoReceptor);
+            OutputStream salida = socketTCP.getOutputStream();
+            salida.write("Camara\n".getBytes());
 
             while (true) {
                 String enviarPatente = generarPatenteChilena() + "\n";
@@ -52,4 +54,5 @@ public class Camara {
 
         return patente.toString();
     }
+
 }
