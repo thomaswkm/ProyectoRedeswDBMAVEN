@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +19,7 @@ public class ClienteHandler implements Runnable {
         try {
             // Manejar la conexión del cliente
             BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter salida = new PrintWriter(socket.getOutputStream(), true);
+            BufferedWriter salida = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
             String patente = entrada.readLine();
 
@@ -30,18 +27,19 @@ public class ClienteHandler implements Runnable {
             int count = obtenerCoincidencias(patente);
 
             // Enviar la respuesta al cliente
-            salida.println("La patente ha sido vista: " + count + " veces");
+            salida.write("La patente ha sido vista: " + count + " veces\n");
+            salida.flush();  // Make sure to flush the buffer to send the response immediately
 
             // Cerrar conexión
             socket.close();
-        } catch (IOException | SQLException e ) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
     }
 
     private int obtenerCoincidencias(String patente) throws SQLException {
         int count = 0;
-        String query = "SELECT COUNT(*) FROM patentes WHERE patente = "+patente;
+        String query = "SELECT COUNT(*) FROM patentes WHERE patente = ?";
         try (PreparedStatement preparedStatement = conexion.prepareStatement(query)) {
             preparedStatement.setString(1, patente);
 

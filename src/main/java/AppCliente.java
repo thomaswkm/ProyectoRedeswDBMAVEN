@@ -1,10 +1,15 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AppCliente {
+    private static final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+
     public static void main(String[] args) {
         String receptorIp = System.getenv("RECEPTOR_IP");
         String receptorPort = System.getenv("RECEPTOR_PORT");
@@ -15,11 +20,15 @@ public class AppCliente {
         }
 
         int puertoReceptor = Integer.parseInt(receptorPort);
+
         try {
             Socket socketTCP = new Socket(receptorIp, puertoReceptor);
             OutputStream salida = socketTCP.getOutputStream();
 
-            menu(salida);  // Pasar el OutputStream al método del menú
+            // Inicia el hilo para manejar los mensajes
+            new Thread(() -> handleMessages(socketTCP)).start();
+
+            menu(salida);  // Pasa el OutputStream al método del menú
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -58,7 +67,7 @@ public class AppCliente {
         int respuesta = -1;
         try {
             respuesta = new Scanner(System.in).nextInt();
-        } catch (InputMismatchException IME) {
+        } catch (Exception e) {
             System.out.println("Ingresa un número");
         }
         return respuesta;
@@ -67,5 +76,20 @@ public class AppCliente {
     public static void mostrarMenu() {
         System.out.println("Menú\n1) Buscar Patente\n2) Salir");
     }
+
+    private static void handleMessages(Socket socket) {
+        try {
+            Scanner scanner = new Scanner(socket.getInputStream());
+            while (true) {
+                if (scanner.hasNextLine()) {  // Check if there is a line to read
+                    String message = scanner.nextLine();
+                    System.out.println(message);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
