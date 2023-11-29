@@ -17,23 +17,30 @@ public class ClienteHandler implements Runnable {
     @Override
     public void run() {
         try {
-            // Manejar la conexión del cliente
             BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             BufferedWriter salida = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-            String patente = entrada.readLine();
+            String patente;
+            while ((patente = entrada.readLine()) != null) {
+                if (patente.equals("exit")) {
+                    // Si el cliente envía "exit", salir del bucle
+                    break;
+                }
 
-            // Obtener el recuento de coincidencias en la base de datos
-            int count = obtenerCoincidencias(patente);
+                int count = obtenerCoincidencias(patente);
 
-            // Enviar la respuesta al cliente
-            salida.write("La patente ha sido vista: " + count + " veces\n");
-            salida.flush();  // Make sure to flush the buffer to send the response immediately
-
-            // Cerrar conexión
-            socket.close();
+                salida.write("La patente ha sido vista: " + count + " veces\n");
+                salida.newLine();  // Agregar nueva línea para indicar el final del mensaje
+                salida.flush();
+            }
         } catch (IOException | SQLException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

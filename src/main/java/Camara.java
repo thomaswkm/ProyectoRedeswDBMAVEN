@@ -1,4 +1,3 @@
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.*;
@@ -6,19 +5,8 @@ import java.util.Random;
 
 public class Camara {
     public static void main(String[] args) {
-        // Obtener la dirección IP y puerto del receptor desde las variables de entorno
-        String receptorIp = System.getenv("RECEPTOR_IP");
-        String receptorPort = System.getenv("RECEPTOR_PORT");
-
-        if (receptorIp == null || receptorPort == null) {
-            System.out.println("Debes proporcionar RECEPTOR_IP y RECEPTOR_PORT como variables de entorno.");
-            System.exit(1);
-        }
-
-        int puertoReceptor = Integer.parseInt(receptorPort);
-
         try {
-            Socket socketTCP = new Socket(receptorIp, puertoReceptor);
+            Socket socketTCP = new Socket("receptor", 5050);
             OutputStream salida = socketTCP.getOutputStream();
             salida.write("Camara\n".getBytes());
 

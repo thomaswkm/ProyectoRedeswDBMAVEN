@@ -13,7 +13,7 @@ public class Receptor {
 
         try {
             Connection conexion = DriverManager.getConnection(
-                    "jdbc:mysql://172.17.0.2:3306/sistema", "root", "pw");
+                    "jdbc:mysql://dbapp:3306/sistema", "root", "pwdb");
 
             ServerSocket receptorSocket = new ServerSocket(puerto);
             System.out.println("Escuchando en el puerto " + puerto);
@@ -30,7 +30,6 @@ public class Receptor {
                     ClienteHandler clienteHandler = new ClienteHandler(conexion, socket);
                     new Thread(clienteHandler).start();
                 } else {
-                    // Manejar otro tipo de conexión o desconectar
                     socket.close();
                 }
             }
