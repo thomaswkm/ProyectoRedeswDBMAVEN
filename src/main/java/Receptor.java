@@ -25,6 +25,8 @@ public class Receptor {
             Connection conexion = DriverManager.getConnection(
                     "jdbc:mysql://dbapp:3306/sistema", "root", "pwdb");
 
+            System.out.println("Conectando con la base de datos...");
+
             // Iniciar hilo para escuchar mensajes UDP
             UDPListener udpListener = new UDPListener(puertoUDP);
             new Thread(udpListener).start();
