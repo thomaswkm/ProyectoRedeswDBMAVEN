@@ -12,6 +12,12 @@ public class Receptor {
         int puerto = 5050;
 
         try {
+
+            while (!isDatabaseAvailable("dbapp", 3306)) {
+                System.out.println("Esperando a que la base de datos esté disponible...");
+                Thread.sleep(10000);
+            }
+
             Connection conexion = DriverManager.getConnection(
                     "jdbc:mysql://dbapp:3306/sistema", "root", "pwdb");
 
@@ -33,7 +39,7 @@ public class Receptor {
                     socket.close();
                 }
             }
-        } catch (IOException | SQLException e) {
+        } catch (IOException | SQLException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -47,6 +53,16 @@ public class Receptor {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static boolean isDatabaseAvailable(String host, int port) {
+        try (Socket socket = new Socket(host, port)) {
+            // Si se puede establecer la conexión, la base de datos está disponible
+            return true;
+        } catch (IOException e) {
+            // Si hay una excepción, la base de datos no está disponible
+            return false;
+        }
     }
 
 }

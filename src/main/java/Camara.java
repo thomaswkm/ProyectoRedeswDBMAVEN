@@ -1,24 +1,32 @@
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.Socket;
 import java.util.Random;
 
 public class Camara {
     public static void main(String[] args) {
-        try {
-            Socket socketTCP = new Socket("receptor", 5050);
-            OutputStream salida = socketTCP.getOutputStream();
-            salida.write("Camara\n".getBytes());
+        int puerto = 5050;
+        while(true) {
+            try {
+                while (!isServerAvailable("receptor", 5050)) {
+                    System.out.println("Esperando a que el receptor de datos esté disponible...");
+                    Thread.sleep(10000);
+                }
 
-            while (true) {
-                String enviarPatente = generarPatenteChilena() + "\n";
-                salida.write(enviarPatente.getBytes());
+                Socket socketTCP = new Socket("receptor", puerto);
+                OutputStream salida = socketTCP.getOutputStream();
+                salida.write("Camara\n".getBytes());
 
-                int tiempoEspera = new Random().nextInt(36000);
-                Thread.sleep(tiempoEspera);
+                while (true) {
+                    String enviarPatente = generarPatenteChilena() + "\n";
+                    salida.write(enviarPatente.getBytes());
+
+                    int tiempoEspera = new Random().nextInt(36000);
+                    Thread.sleep(tiempoEspera);
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -43,4 +51,11 @@ public class Camara {
         return patente.toString();
     }
 
+    public static boolean isServerAvailable(String host, int port) {
+        try (Socket socket = new Socket(host, port)) {
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 }
