@@ -3,7 +3,7 @@ import java.net.Socket;
 
 public class AppCliente {
     public static void main(String[] args) {
-        String servidor = "receptor";
+        String servidor = "0.0.0.0";
         int puerto = 5050;
 
         while (true) {
@@ -23,7 +23,7 @@ public class AppCliente {
 
                 String patente;
                 while (true) {
-                    System.out.print("Ingrese la patente (o 'exit' para salir): ");
+                    System.out.print("Ingrese la patente: ");
                     patente = entrada.readLine();
 
                     salida.write(patente + "\n");

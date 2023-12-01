@@ -1,26 +1,36 @@
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Random;
 
 public class Camara {
     public static void main(String[] args) {
-        int puerto = 5050;
-        while(true) {
+        int puertoTCP = 5050;
+        int puertoUDP = 5051;
+
+        while (true) {
             try {
-                while (!isServerAvailable("receptor", 5050)) {
+                // Conexión TCP
+                while (!isServerAvailable("receptor", puertoTCP)) {
                     System.out.println("Esperando a que el receptor de datos esté disponible...");
                     Thread.sleep(10000);
                 }
 
-                Socket socketTCP = new Socket("receptor", puerto);
+                Socket socketTCP = new Socket("receptor", puertoTCP);
                 OutputStream salida = socketTCP.getOutputStream();
                 salida.write("Camara\n".getBytes());
 
+                // Enviar mensaje UDP
+                enviarMensajeUDP("receptor", puertoUDP, "status up");
+
+                // Generar y enviar patentes cada cierto tiempo
                 while (true) {
                     String enviarPatente = generarPatenteChilena() + "\n";
                     salida.write(enviarPatente.getBytes());
-
+                    enviarMensajeUDP("receptor", puertoUDP, "camara: "+ InetAddress.getLocalHost() + " STATUS: UP");
                     int tiempoEspera = new Random().nextInt(36000);
                     Thread.sleep(tiempoEspera);
                 }
@@ -56,6 +66,16 @@ public class Camara {
             return true;
         } catch (IOException e) {
             return false;
+        }
+    }
+
+    private static void enviarMensajeUDP(String host, int puerto, String mensaje) throws IOException {
+        try (DatagramSocket socketUDP = new DatagramSocket()) {
+            InetAddress direccionDestino = InetAddress.getByName(host);
+            byte[] buffer = mensaje.getBytes();
+
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, direccionDestino, puerto);
+            socketUDP.send(packet);
         }
     }
 }

@@ -1,18 +1,22 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public class Receptor {
     public static void main(String[] args) {
-        int puerto = 5050;
+        int puertoTCP = 5050;
+        int puertoUDP = 5051;
 
         try {
-
+            // Conexión a la base de datos
             while (!isDatabaseAvailable("dbapp", 3306)) {
                 System.out.println("Esperando a que la base de datos esté disponible...");
                 Thread.sleep(10000);
@@ -21,8 +25,13 @@ public class Receptor {
             Connection conexion = DriverManager.getConnection(
                     "jdbc:mysql://dbapp:3306/sistema", "root", "pwdb");
 
-            ServerSocket receptorSocket = new ServerSocket(puerto);
-            System.out.println("Escuchando en el puerto " + puerto);
+            // Iniciar hilo para escuchar mensajes UDP
+            UDPListener udpListener = new UDPListener(puertoUDP);
+            new Thread(udpListener).start();
+
+            // Iniciar servidor TCP
+            ServerSocket receptorSocket = new ServerSocket(puertoTCP);
+            System.out.println("Escuchando en el puerto " + puertoTCP);
 
             while (true) {
                 Socket socket = receptorSocket.accept();
@@ -44,7 +53,6 @@ public class Receptor {
         }
     }
 
-
     public static String obtenerTipoEntidad(Socket socket) {
         try {
             BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -64,5 +72,4 @@ public class Receptor {
             return false;
         }
     }
-
 }
